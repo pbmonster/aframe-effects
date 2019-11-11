@@ -1,9 +1,11 @@
 // Copyright 2017-2018 Yannis Gravezas <wizgrav@gmail.com> MIT licensed
+window.minPixelRatio = 2;
 
 AFRAME.registerSystem("effects", {
     schema: { type: "array", default: [] },
 
     init: function () {
+        window.minPixelRatio = Math.min(2, window.devicePixelRatio || 1);
         this.effects = {};
         this.passes = [];
         this._passes = [];
@@ -96,6 +98,8 @@ AFRAME.registerSystem("effects", {
         this.quad.material = material;
         var isFn = typeof viewCb === "function";
         var s = renderTarget || renderer.getSize();
+        s.width *= window.minPixelRatio;
+        s.height *= window.minPixelRatio;
         this.resolution.value.set(s.width, s.height, 1/s.width, 1/s.height);
         var oldClear = renderer.autoClear;
         renderer.autoClear = false;
@@ -127,11 +131,11 @@ AFRAME.registerSystem("effects", {
         renderer.autoClear = oldClear;
         function setView(x,y,w,h) {
             if (renderTarget) {
-                renderTarget.viewport.set( x, y, w, h );
-				renderTarget.scissor.set( x, y, w, h );
+                renderTarget.viewport.set( x, y, w / window.minPixelRatio, h / window.minPixelRatio );
+				renderTarget.scissor.set( x, y, w / window.minPixelRatio, h / window.minPixelRatio );
             } else {
-                renderer.setViewport( x, y, w, h );
-				renderer.setScissor( x, y, w, h );
+                renderer.setViewport( x, y, w / window.minPixelRatio, h / window.minPixelRatio );
+				renderer.setScissor( x, y, w / window.minPixelRatio, h / window.minPixelRatio );
             }
         }
     },
@@ -346,6 +350,8 @@ AFRAME.registerSystem("effects", {
         if (!isEnabled) return false;
         if (resize && (this.needsResize || behavior.needsResize) && behavior.setSize) {
             var size = scene.renderer.getSize();
+            size.width *= window.minPixelRatio;
+            size.height *= window.minPixelRatio;
             behavior.setSize(size.width, size.height);
             delete behavior.needsResize;
         }
@@ -370,6 +376,8 @@ AFRAME.registerSystem("effects", {
             if(scene.onBeforeRender) {
                 scene.onBeforeRender = function (renderer, scene, camera) {
                     var size = renderer.getSize();
+                    size.width *= window.minPixelRatio;
+                    size.height *= window.minPixelRatio;
                     if (size.width !== rt.width || size.height !== rt.height) {
                         rt.setSize(size.width, size.height);
                         rts[0].setSize(size.width, size.height);
@@ -390,6 +398,8 @@ AFRAME.registerSystem("effects", {
                 renderer.render = function (scene, camera, renderTarget, forceClear) {
                     if (renderTarget === rt) {
                         var size = renderer.getSize();
+                        size.width *= window.minPixelRatio;
+                        size.height *= window.minPixelRatio;
                         if (size.width !== rt.width || size.height !== rt.height) {
                             rt.setSize(size.width, size.height);
                             rts[0].setSize(size.width, size.height);
@@ -455,6 +465,8 @@ AFRAME.registerSystem("effects", {
         if ( ! camera.projectionMatrix ) return;
         var LightState = this.LightState, lights = this.lightComponents;
         var size = renderer.getSize();
+        size.width *= window.minPixelRatio;
+        size.height *= window.minPixelRatio;
         var d = LightState.tileTexture.value.image.data;
         var ld = LightState.lightTexture.value.image.data;
         var viewMatrix = camera.matrixWorldInverse;
